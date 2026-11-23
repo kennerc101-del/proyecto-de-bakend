@@ -1,0 +1,133 @@
+<%- include('partials/head') %>
+<%- include('partials/navbar') %>
+<div class="container">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h3>Operación de Vuelos, Aviones, Pistas y Tripulación</h3>
+    <a href="/dashboard" class="btn btn-secondary btn-sm">Volver al Panel</a>
+  </div>
+
+  <% if (typeof mensaje !== 'undefined' && mensaje) { %>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+      <%= mensaje %>
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+  <% } %>
+
+  <% if (typeof error !== 'undefined' && error) { %>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+      <%= error %>
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+  <% } %>
+
+  <% if (currentUser && (currentUser.role === 'root' || currentUser.role === 'admind')) { %>
+    <div class="card shadow-sm mb-4">
+      <div class="card-header bg-white fw-bold">Programar Nuevo Vuelo</div>
+      <div class="card-body">
+        <form action="/vuelos/vista/crear" method="POST" class="row g-3">
+          <div class="col-md-3">
+            <label class="form-label">Código de Vuelo</label>
+            <input type="text" name="codigo_vuelo" class="form-control" placeholder="3V-104" required />
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Origen</label>
+            <input type="text" name="origen" class="form-control" placeholder="CCS - Caracas" required />
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Destino</label>
+            <input type="text" name="destino" class="form-control" placeholder="VLN - Valencia" required />
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Hora de Salida</label>
+            <input type="datetime-local" name="hora_salida" class="form-control" required />
+          </div>
+
+          <div class="col-md-3">
+            <label class="form-label">Estado del Vuelo</label>
+            <select name="estado_vuelo" class="form-select" required>
+              <option value="Programado">Programado</option>
+              <option value="Embarque">Embarque</option>
+              <option value="En Aire">En Aire</option>
+              <option value="Aterrizado">Aterrizado</option>
+              <option value="Cancelado">Cancelado</option>
+            </select>
+          </div>
+
+          <div class="col-md-3">
+            <label class="form-label">Avión</label>
+            <select name="id_avion" class="form-select" required>
+              <option value="">Seleccione un avión...</option>
+              <% (aviones || []).forEach(av => { %>
+                <option value="<%= av.id %>"><%= av.matricula %> - <%= av.modelo %></option>
+              <% }) %>
+            </select>
+          </div>
+
+          <div class="col-md-3">
+            <label class="form-label">Pista (Solo Operativas)</label>
+            <select name="id_pista" class="form-select" required>
+              <option value="">Seleccione una pista operativa...</option>
+              <% (pistasOperativas || []).forEach(p => { %>
+                <option value="<%= p.id %>">
+                  Pista <%= p.codigo_pista %> (<%= p.longitud_metros %> m)
+                </option>
+              <% }) %>
+            </select>
+          </div>
+
+          <div class="col-md-3">
+            <label class="form-label">Torre de Control</label>
+            <select name="id_torre" class="form-select" required>
+              <option value="">Seleccione una torre...</option>
+              <% (torres || []).forEach(t => { %>
+                <option value="<%= t.id %>"><%= t.nombre_torre %> (<%= t.frecuencia_mhz %> MHz)</option>
+              <% }) %>
+            </select>
+          </div>
+
+          <div class="col-12">
+            <button type="submit" class="btn btn-primary">Programar Vuelo</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  <% } %>
+
+  <div class="card shadow-sm">
+    <div class="card-body table-responsive">
+      <table class="table table-striped table-hover align-middle mb-0">
+        <thead class="table-dark">
+          <tr>
+            <th>Vuelo</th>
+            <th>Ruta</th>
+            <th>Salida</th>
+            <th>Estado</th>
+            <th>Avión</th>
+            <th>Pista</th>
+            <th>Torre</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (!vuelos || vuelos.length === 0) { %>
+            <tr><td colspan="7" class="text-center text-muted py-4">No hay vuelos registrados</td></tr>
+          <% } else { %>
+            <% vuelos.forEach(v => { %>
+              <tr>
+                <td><strong><%= v.codigo_vuelo %></strong></td>
+                <td><%= v.origen %> → <%= v.destino %></td>
+                <td><%= v.hora_salida %></td>
+                <td><span class="badge bg-primary"><%= v.estado_vuelo %></span></td>
+                <td><%= v.avion_matricula %> (<%= v.avion_modelo %>)</td>
+                <td><%= v.codigo_pista %></td>
+                <td><%= v.nombre_torre %></td>
+              </tr>
+            <% }) %>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

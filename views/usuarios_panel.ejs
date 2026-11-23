@@ -1,0 +1,117 @@
+<%- include('partials/head') %>
+<%- include('partials/navbar') %>
+<% const puedeGestionarUsuarios = typeof esRoot !== 'undefined' ? esRoot : (currentUser && currentUser.role === 'root'); %>
+<div class="container pb-5">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h3>Gestión de Usuarios (root / admind / user)</h3>
+    <a href="/dashboard" class="btn btn-secondary btn-sm">Volver al Panel</a>
+  </div>
+
+  <% if (typeof mensaje !== 'undefined' && mensaje) { %>
+    <div class="alert alert-success alert-dismissible fade show">
+      <%= mensaje %>
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+  <% } %>
+  <% if (typeof error !== 'undefined' && error) { %>
+    <div class="alert alert-danger alert-dismissible fade show">
+      <%= error %>
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+  <% } %>
+
+  <% if (puedeGestionarUsuarios) { %>
+    <div class="card shadow-sm mb-4">
+      <div class="card-header bg-white fw-bold">Registrar Nuevo Usuario</div>
+      <div class="card-body">
+        <form action="/usuarios/crear" method="POST" class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label">Usuario</label>
+            <input type="text" name="username" class="form-control" required />
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Contraseña</label>
+            <input type="password" name="password" class="form-control" required />
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Rol</label>
+            <select name="role" class="form-select" required>
+              <option value="user">user</option>
+              <option value="admind">admind</option>
+              <option value="root">root</option>
+            </select>
+          </div>
+          <div class="col-12">
+            <button type="submit" class="btn btn-success">Crear Usuario</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  <% } else { %>
+    <div class="alert alert-info">
+      Modo consulta (<strong><%= currentUser ? currentUser.role : 'admind' %></strong>): puedes revisar los usuarios registrados, pero solo <strong>root</strong> puede crear, actualizar o eliminar cuentas.
+    </div>
+  <% } %>
+
+  <div class="card shadow-sm">
+    <div class="card-header bg-white fw-bold">Usuarios Registrados</div>
+    <div class="card-body table-responsive">
+      <table class="table table-bordered table-hover align-middle mb-0">
+        <thead class="table-dark">
+          <tr>
+            <th>ID</th>
+            <th>Usuario</th>
+            <th>Rol</th>
+            <% if (puedeGestionarUsuarios) { %>
+              <th>Actualizar</th>
+              <th>Eliminar</th>
+            <% } %>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (!usuarios || usuarios.length === 0) { %>
+            <tr>
+              <td colspan="<%= puedeGestionarUsuarios ? 5 : 3 %>" class="text-center text-muted py-3">
+                No hay usuarios registrados en BD
+              </td>
+            </tr>
+          <% } else { %>
+            <% usuarios.forEach(u => { %>
+              <tr>
+                <td><%= u.id %></td>
+                <td><strong><%= u.username %></strong></td>
+                <td><span class="badge bg-secondary"><%= u.role %></span></td>
+                <% if (puedeGestionarUsuarios) { %>
+                  <td>
+                    <form action="/usuarios/actualizar/<%= u.id %>" method="POST" class="d-flex flex-wrap gap-1 align-items-center">
+                      <input type="text" name="username" value="<%= u.username %>" class="form-control form-control-sm" style="width: 130px;" required />
+                      <select name="role" class="form-select form-select-sm" style="width: 110px;">
+                        <option value="user" <%= u.role === 'user' ? 'selected' : '' %>>user</option>
+                        <option value="admind" <%= u.role === 'admind' ? 'selected' : '' %>>admind</option>
+                        <option value="root" <%= u.role === 'root' ? 'selected' : '' %>>root</option>
+                      </select>
+                      <input type="password" name="password" placeholder="Nueva clave (opcional)" class="form-control form-control-sm" style="width: 165px;" />
+                      <button type="submit" class="btn btn-primary btn-sm">Guardar</button>
+                    </form>
+                  </td>
+                  <td>
+                    <% if (u.username !== 'root') { %>
+                      <form action="/usuarios/eliminar/<%= u.id %>" method="POST" onsubmit="return confirm('¿Eliminar usuario <%= u.username %>?');">
+                        <button type="submit" class="btn btn-danger btn-sm">Borrar</button>
+                      </form>
+                    <% } else { %>
+                      <span class="text-muted small">Protegido</span>
+                    <% } %>
+                  </td>
+                <% } %>
+              </tr>
+            <% }) %>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

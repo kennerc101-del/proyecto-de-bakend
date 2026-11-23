@@ -1,0 +1,30 @@
+<%- include('partials/head') %>
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-5">
+      <div class="card shadow border-0">
+        <div class="card-body p-4">
+          <h4 class="card-title text-center mb-3">✈️ Gestión de Aeropuerto</h4>
+          <p class="text-muted small text-center">Sesión protegida con JWT (60 min) y RBAC</p>
+          <% if (error) { %>
+            <div class="alert alert-danger py-2"><%= error %></div>
+          <% } %>
+          <form action="/usuarios/login" method="POST">
+            <div class="mb-3">
+              <label class="form-label">Usuario</label>
+              <input type="text" name="username" class="form-control" required placeholder="root" />
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Contraseña</label>
+              <input type="password" name="password" class="form-control" required />
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Ingresar</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

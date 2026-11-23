@@ -1,0 +1,32 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm mb-4">
+  <div class="container-fluid">
+    <a class="navbar-brand fw-bold" href="/dashboard">✈️ AeroGestión</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navMenu">
+      <% if (currentUser) { %>
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item"><a class="nav-link" href="/dashboard">Inicio</a></li>
+          <li class="nav-item"><a class="nav-link" href="/gestion/aerolineas">Aerolíneas</a></li>
+          <li class="nav-item"><a class="nav-link" href="/gestion/pistas">Pistas</a></li>
+          <li class="nav-item"><a class="nav-link" href="/gestion/torres_control">Torres</a></li>
+          <li class="nav-item"><a class="nav-link" href="/gestion/aviones">Aviones</a></li>
+          <li class="nav-item"><a class="nav-link" href="/gestion/tripulaciones">Tripulación</a></li>
+          <li class="nav-item"><a class="nav-link" href="/gestion/vuelos">Vuelos</a></li>
+          <li class="nav-item"><a class="nav-link" href="/gestion/asignaciones_vuelo">Asignaciones</a></li>
+          <% if (currentUser.role === 'root' || currentUser.role === 'admind') { %>
+            <li class="nav-item"><a class="nav-link text-warning" href="/usuarios-panel">Usuarios</a></li>
+          <% } %>
+        </ul>
+        <span class="navbar-text text-light me-3">
+          <strong><%= currentUser.username %></strong>
+          <span class="badge bg-info text-dark ms-1"><%= currentUser.role %></span>
+        </span>
+        <form action="/usuarios/logout" method="POST" class="d-flex">
+          <button class="btn btn-outline-light btn-sm" type="submit">Salir</button>
+        </form>
+      <% } %>
+    </div>
+  </div>
+</nav>

@@ -1,0 +1,295 @@
+<%- include('partials/head') %>
+<%- include('partials/navbar') %>
+<div class="container pb-5">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+      <h3 class="mb-0"><%= titulo %></h3>
+      <small class="text-muted">Rol actual: <strong><%= currentUser.role %></strong></small>
+    </div>
+    <a href="/dashboard" class="btn btn-secondary btn-sm">Volver al Panel</a>
+  </div>
+
+  <% if (typeof mensaje !== 'undefined' && mensaje) { %>
+    <div class="alert alert-success alert-dismissible fade show">
+      <%= mensaje %>
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+  <% } %>
+  <% if (typeof error !== 'undefined' && error) { %>
+    <div class="alert alert-danger alert-dismissible fade show">
+      <%= error %>
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+  <% } %>
+
+  <% if (!puedeCrear) { %>
+    <div class="alert alert-info">
+      Modo consulta/operación limitada para el rol <strong><%= currentUser.role %></strong>: no puedes crear ni eliminar registros en este módulo.
+    </div>
+  <% } %>
+
+  <!-- FORMULARIO DE CREACIÓN (SOLO root / admind) -->
+  <% if (puedeCrear) { %>
+    <div class="card shadow-sm mb-4">
+      <div class="card-header bg-white fw-bold">Agregar Nuevo Registro</div>
+      <div class="card-body">
+        <form action="<%= apiBase %>/agregar" method="POST" class="row g-3">
+          <% if (entidad === 'aerolineas') { %>
+            <div class="col-md-4"><label class="form-label">Nombre</label><input type="text" name="nombre" class="form-control" required /></div>
+            <div class="col-md-4"><label class="form-label">Código IATA</label><input type="text" name="codigo_iata" class="form-control" required /></div>
+            <div class="col-md-4"><label class="form-label">País</label><input type="text" name="pais" class="form-control" required /></div>
+          <% } else if (entidad === 'pistas') { %>
+            <div class="col-md-4"><label class="form-label">Código de Pista</label><input type="text" name="codigo_pista" class="form-control" required /></div>
+            <div class="col-md-4"><label class="form-label">Longitud (m)</label><input type="number" name="longitud_metros" class="form-control" required /></div>
+            <div class="col-md-4">
+              <label class="form-label">Estado</label>
+              <select name="estado" class="form-select">
+                <option value="Operativa">Operativa</option>
+                <option value="Mantenimiento">Mantenimiento</option>
+                <option value="Cerrada">Cerrada</option>
+              </select>
+            </div>
+          <% } else if (entidad === 'torres_control') { %>
+            <div class="col-md-4"><label class="form-label">Nombre de Torre</label><input type="text" name="nombre_torre" class="form-control" required /></div>
+            <div class="col-md-4"><label class="form-label">Frecuencia (MHz)</label><input type="text" name="frecuencia_mhz" class="form-control" required /></div>
+            <div class="col-md-4"><label class="form-label">Jefe de Turno</label><input type="text" name="jefe_turno" class="form-control" required /></div>
+          <% } else if (entidad === 'aviones') { %>
+            <div class="col-md-3"><label class="form-label">Matrícula</label><input type="text" name="matricula" class="form-control" required /></div>
+            <div class="col-md-3"><label class="form-label">Modelo</label><input type="text" name="modelo" class="form-control" required /></div>
+            <div class="col-md-3"><label class="form-label">Capacidad</label><input type="number" name="capacidad_pasajeros" class="form-control" required /></div>
+            <div class="col-md-3">
+              <label class="form-label">Aerolínea</label>
+              <select name="id_aerolinea" class="form-select" required>
+                <option value="">Seleccione...</option>
+                <% (aerolineas || []).forEach(al => { %>
+                  <option value="<%= al.id %>"><%= al.nombre %> (<%= al.codigo_iata %>)</option>
+                <% }) %>
+              </select>
+            </div>
+          <% } else if (entidad === 'tripulaciones') { %>
+            <div class="col-md-4"><label class="form-label">Nombre Completo</label><input type="text" name="nombre_completo" class="form-control" required /></div>
+            <div class="col-md-4"><label class="form-label">Rol de Vuelo</label><input type="text" name="rol_vuelo" class="form-control" required /></div>
+            <div class="col-md-4"><label class="form-label">Licencia</label><input type="text" name="licencia" class="form-control" required /></div>
+          <% } else if (entidad === 'vuelos') { %>
+            <div class="col-md-3"><label class="form-label">Código Vuelo</label><input type="text" name="codigo_vuelo" class="form-control" required /></div>
+            <div class="col-md-3"><label class="form-label">Origen</label><input type="text" name="origen" class="form-control" required /></div>
+            <div class="col-md-3"><label class="form-label">Destino</label><input type="text" name="destino" class="form-control" required /></div>
+            <div class="col-md-3"><label class="form-label">Hora Salida</label><input type="datetime-local" name="hora_salida" class="form-control" required /></div>
+            <div class="col-md-3">
+              <label class="form-label">Estado Vuelo</label>
+              <select name="estado_vuelo" class="form-select">
+                <option value="Programado">Programado</option>
+                <option value="Embarque">Embarque</option>
+                <option value="En Aire">En Aire</option>
+                <option value="Aterrizado">Aterrizado</option>
+                <option value="Cancelado">Cancelado</option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Avión</label>
+              <select name="id_avion" class="form-select" required>
+                <option value="">Seleccione...</option>
+                <% (aviones || []).forEach(av => { %>
+                  <option value="<%= av.id %>"><%= av.matricula %> - <%= av.modelo %></option>
+                <% }) %>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Pista (Solo Operativas)</label>
+              <select name="id_pista" class="form-select" required>
+                <option value="">Seleccione pista operativa...</option>
+                <% (pistasOperativas || []).forEach(p => { %>
+                  <option value="<%= p.id %>">Pista <%= p.codigo_pista %> (<%= p.longitud_metros %> m)</option>
+                <% }) %>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Torre de Control</label>
+              <select name="id_torre" class="form-select" required>
+                <option value="">Seleccione...</option>
+                <% (torres || []).forEach(t => { %>
+                  <option value="<%= t.id %>"><%= t.nombre_torre %> (<%= t.frecuencia_mhz %> MHz)</option>
+                <% }) %>
+              </select>
+            </div>
+          <% } else if (entidad === 'asignaciones_vuelo') { %>
+            <div class="col-md-4">
+              <label class="form-label">Vuelo</label>
+              <select name="id_vuelo" class="form-select" required>
+                <option value="">Seleccione vuelo...</option>
+                <% (vuelos || []).forEach(v => { %>
+                  <option value="<%= v.id %>"><%= v.codigo_vuelo %> (<%= v.origen %> → <%= v.destino %>)</option>
+                <% }) %>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Tripulante</label>
+              <select name="id_tripulacion" class="form-select" required>
+                <option value="">Seleccione tripulante...</option>
+                <% (tripulaciones || []).forEach(tr => { %>
+                  <option value="<%= tr.id %>"><%= tr.nombre_completo %> - <%= tr.rol_vuelo %></option>
+                <% }) %>
+              </select>
+            </div>
+            <div class="col-md-4"><label class="form-label">Función Asignada</label><input type="text" name="funcion_asignada" class="form-control" required /></div>
+          <% } %>
+          <div class="col-12">
+            <button type="submit" class="btn btn-success">Guardar Registro</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  <% } %>
+
+  <!-- LISTADO + ACTUALIZACIÓN + ELIMINACIÓN -->
+  <div class="card shadow-sm">
+    <div class="card-header bg-white fw-bold">Registros (<%= registros.length %>)</div>
+    <div class="card-body table-responsive">
+      <table class="table table-bordered table-hover align-middle mb-0">
+        <thead class="table-dark">
+          <tr>
+            <th>ID</th>
+            <th>Datos del Registro</th>
+            <% if (puedeEditarTodo || puedeCambiarEstadoVuelo) { %><th>Actualizar</th><% } %>
+            <% if (puedeEliminar) { %><th>Eliminar</th><% } %>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (!registros || registros.length === 0) { %>
+            <tr>
+              <td colspan="4" class="text-center text-muted py-4">No hay registros todavía</td>
+            </tr>
+          <% } else { %>
+            <% registros.forEach(r => { %>
+              <tr>
+                <td><%= r.id %></td>
+                <td>
+                  <% if (entidad === 'aerolineas') { %>
+                    <strong><%= r.nombre %></strong> (<%= r.codigo_iata %>) — <%= r.pais %>
+                  <% } else if (entidad === 'pistas') { %>
+                    <strong>Pista <%= r.codigo_pista %></strong> — <%= r.longitud_metros %> m — <span class="badge bg-secondary"><%= r.estado %></span>
+                  <% } else if (entidad === 'torres_control') { %>
+                    <strong><%= r.nombre_torre %></strong> — <%= r.frecuencia_mhz %> MHz — Jefe: <%= r.jefe_turno %>
+                  <% } else if (entidad === 'aviones') { %>
+                    <strong><%= r.matricula %></strong> (<%= r.modelo %>) — Cap: <%= r.capacidad_pasajeros %> — Aerolínea: <%= r.aerolinea_nombre || r.id_aerolinea %>
+                  <% } else if (entidad === 'tripulaciones') { %>
+                    <strong><%= r.nombre_completo %></strong> — <%= r.rol_vuelo %> — Lic: <%= r.licencia %>
+                  <% } else if (entidad === 'vuelos') { %>
+                    <strong><%= r.codigo_vuelo %></strong>: <%= r.origen %> → <%= r.destino %> | <span class="badge bg-primary"><%= r.estado_vuelo %></span><br/>
+                    <small class="text-muted">Avión: <%= r.avion_matricula || r.id_avion %> | Pista: <%= r.codigo_pista || r.id_pista %> | Torre: <%= r.nombre_torre || r.id_torre %></small>
+                  <% } else if (entidad === 'asignaciones_vuelo') { %>
+                    Vuelo <strong><%= r.codigo_vuelo || r.id_vuelo %></strong> — Tripulante: <strong><%= r.tripulante || r.id_tripulacion %></strong> — Función: <%= r.funcion_asignada %>
+                  <% } %>
+                </td>
+
+                <% if (puedeEditarTodo || puedeCambiarEstadoVuelo) { %>
+                  <td>
+                    <% if (puedeEditarTodo && entidad === 'aerolineas') { %>
+                      <form action="<%= apiBase %>/actualizar/<%= r.id %>" method="POST" class="d-flex gap-1 flex-wrap">
+                        <input type="text" name="nombre" value="<%= r.nombre %>" class="form-control form-control-sm" style="width:130px" required />
+                        <input type="text" name="codigo_iata" value="<%= r.codigo_iata %>" class="form-control form-control-sm" style="width:75px" required />
+                        <input type="text" name="pais" value="<%= r.pais %>" class="form-control form-control-sm" style="width:110px" required />
+                        <button type="submit" class="btn btn-primary btn-sm">Actualizar</button>
+                      </form>
+                    <% } else if (puedeEditarTodo && entidad === 'pistas') { %>
+                      <form action="<%= apiBase %>/actualizar/<%= r.id %>" method="POST" class="d-flex gap-1 flex-wrap">
+                        <input type="text" name="codigo_pista" value="<%= r.codigo_pista %>" class="form-control form-control-sm" style="width:105px" required />
+                        <input type="number" name="longitud_metros" value="<%= r.longitud_metros %>" class="form-control form-control-sm" style="width:95px" required />
+                        <select name="estado" class="form-select form-select-sm" style="width:130px">
+                          <option value="Operativa" <%= r.estado === 'Operativa' ? 'selected' : '' %>>Operativa</option>
+                          <option value="Mantenimiento" <%= r.estado === 'Mantenimiento' ? 'selected' : '' %>>Mantenimiento</option>
+                          <option value="Cerrada" <%= r.estado === 'Cerrada' ? 'selected' : '' %>>Cerrada</option>
+                        </select>
+                        <button type="submit" class="btn btn-primary btn-sm">Actualizar</button>
+                      </form>
+                    <% } else if (puedeEditarTodo && entidad === 'torres_control') { %>
+                      <form action="<%= apiBase %>/actualizar/<%= r.id %>" method="POST" class="d-flex gap-1 flex-wrap">
+                        <input type="text" name="nombre_torre" value="<%= r.nombre_torre %>" class="form-control form-control-sm" style="width:135px" required />
+                        <input type="text" name="frecuencia_mhz" value="<%= r.frecuencia_mhz %>" class="form-control form-control-sm" style="width:90px" required />
+                        <input type="text" name="jefe_turno" value="<%= r.jefe_turno %>" class="form-control form-control-sm" style="width:135px" required />
+                        <button type="submit" class="btn btn-primary btn-sm">Actualizar</button>
+                      </form>
+                    <% } else if (puedeEditarTodo && entidad === 'aviones') { %>
+                      <form action="<%= apiBase %>/actualizar/<%= r.id %>" method="POST" class="d-flex gap-1 flex-wrap">
+                        <input type="text" name="matricula" value="<%= r.matricula %>" class="form-control form-control-sm" style="width:100px" required />
+                        <input type="text" name="modelo" value="<%= r.modelo %>" class="form-control form-control-sm" style="width:130px" required />
+                        <input type="number" name="capacidad_pasajeros" value="<%= r.capacidad_pasajeros %>" class="form-control form-control-sm" style="width:85px" required />
+                        <select name="id_aerolinea" class="form-select form-select-sm" style="width:130px">
+                          <% (aerolineas || []).forEach(al => { %>
+                            <option value="<%= al.id %>" <%= Number(r.id_aerolinea) === Number(al.id) ? 'selected' : '' %>><%= al.nombre %></option>
+                          <% }) %>
+                        </select>
+                        <button type="submit" class="btn btn-primary btn-sm">Actualizar</button>
+                      </form>
+                    <% } else if (puedeEditarTodo && entidad === 'tripulaciones') { %>
+                      <form action="<%= apiBase %>/actualizar/<%= r.id %>" method="POST" class="d-flex gap-1 flex-wrap">
+                        <input type="text" name="nombre_completo" value="<%= r.nombre_completo %>" class="form-control form-control-sm" style="width:135px" required />
+                        <input type="text" name="rol_vuelo" value="<%= r.rol_vuelo %>" class="form-control form-control-sm" style="width:125px" required />
+                        <input type="text" name="licencia" value="<%= r.licencia %>" class="form-control form-control-sm" style="width:115px" required />
+                        <button type="submit" class="btn btn-primary btn-sm">Actualizar</button>
+                      </form>
+                    <% } else if (entidad === 'vuelos' && !puedeEditarTodo && puedeCambiarEstadoVuelo) { %>
+                      <!-- Rol 'user': solo puede cambiar estado_vuelo -->
+                      <form action="<%= apiBase %>/actualizar/<%= r.id %>" method="POST" class="d-flex gap-1">
+                        <select name="estado_vuelo" class="form-select form-select-sm" style="width:140px">
+                          <option value="Programado" <%= r.estado_vuelo === 'Programado' ? 'selected' : '' %>>Programado</option>
+                          <option value="Embarque" <%= r.estado_vuelo === 'Embarque' ? 'selected' : '' %>>Embarque</option>
+                          <option value="En Aire" <%= r.estado_vuelo === 'En Aire' ? 'selected' : '' %>>En Aire</option>
+                          <option value="Aterrizado" <%= r.estado_vuelo === 'Aterrizado' ? 'selected' : '' %>>Aterrizado</option>
+                          <option value="Cancelado" <%= r.estado_vuelo === 'Cancelado' ? 'selected' : '' %>>Cancelado</option>
+                        </select>
+                        <button type="submit" class="btn btn-warning btn-sm">Estado</button>
+                      </form>
+                    <% } else if (puedeEditarTodo && entidad === 'vuelos') { %>
+                      <form action="<%= apiBase %>/actualizar/<%= r.id %>" method="POST" class="d-flex gap-1 flex-wrap">
+                        <input type="text" name="codigo_vuelo" value="<%= r.codigo_vuelo %>" class="form-control form-control-sm" style="width:85px" required />
+                        <input type="text" name="origen" value="<%= r.origen %>" class="form-control form-control-sm" style="width:105px" required />
+                        <input type="text" name="destino" value="<%= r.destino %>" class="form-control form-control-sm" style="width:105px" required />
+                        <select name="estado_vuelo" class="form-select form-select-sm" style="width:120px">
+                          <option value="Programado" <%= r.estado_vuelo === 'Programado' ? 'selected' : '' %>>Programado</option>
+                          <option value="Embarque" <%= r.estado_vuelo === 'Embarque' ? 'selected' : '' %>>Embarque</option>
+                          <option value="En Aire" <%= r.estado_vuelo === 'En Aire' ? 'selected' : '' %>>En Aire</option>
+                          <option value="Aterrizado" <%= r.estado_vuelo === 'Aterrizado' ? 'selected' : '' %>>Aterrizado</option>
+                          <option value="Cancelado" <%= r.estado_vuelo === 'Cancelado' ? 'selected' : '' %>>Cancelado</option>
+                        </select>
+                        <select name="id_pista" class="form-select form-select-sm" style="width:130px" required>
+                          <% (pistasOperativas || []).forEach(p => { %>
+                            <option value="<%= p.id %>" <%= Number(r.id_pista) === Number(p.id) ? 'selected' : '' %>>Pista <%= p.codigo_pista %></option>
+                          <% }) %>
+                        </select>
+                        <input type="hidden" name="hora_salida" value="<%= r.hora_salida ? new Date(r.hora_salida).toISOString().slice(0,16) : '' %>" />
+                        <input type="hidden" name="id_avion" value="<%= r.id_avion %>" />
+                        <input type="hidden" name="id_torre" value="<%= r.id_torre %>" />
+                        <button type="submit" class="btn btn-primary btn-sm">Actualizar</button>
+                      </form>
+                    <% } else if (puedeEditarTodo && entidad === 'asignaciones_vuelo') { %>
+                      <form action="<%= apiBase %>/actualizar/<%= r.id %>" method="POST" class="d-flex gap-1 flex-wrap">
+                        <input type="text" name="funcion_asignada" value="<%= r.funcion_asignada %>" class="form-control form-control-sm" style="width:170px" required />
+                        <input type="hidden" name="id_vuelo" value="<%= r.id_vuelo %>" />
+                        <input type="hidden" name="id_tripulacion" value="<%= r.id_tripulacion %>" />
+                        <button type="submit" class="btn btn-primary btn-sm">Actualizar</button>
+                      </form>
+                    <% } else { %>
+                      <span class="text-muted small">Sin permiso</span>
+                    <% } %>
+                  </td>
+                <% } %>
+
+                <% if (puedeEliminar) { %>
+                  <td>
+                    <form action="<%= apiBase %>/eliminar/<%= r.id %>" method="POST" onsubmit="return confirm('¿Eliminar este registro?');">
+                      <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+                    </form>
+                  </td>
+                <% } %>
+              </tr>
+            <% }) %>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
